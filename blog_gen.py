@@ -2,6 +2,7 @@ import argparse
 import datetime
 import os
 import sys
+import zipfile
 
 days_in_month = {
     1: 31,
@@ -50,25 +51,34 @@ def transfer_photos(unit_dir, week):
     assert(os.path.exists(unit_dir))
 
     week_dir = os.path.join(unit_dir, "Week{}".format(week))
+    download_dir = 'C:/Users/Chris/Downloads'
 
     photos_fnames = [
         'Photos.zip',
-        'Photos (1).zip'
-        'Photos (2).zip'
-        'Photos (3).zip'
-        'Photos (4).zip'
-        'Photos (5).zip'
-        'Photos (6).zip'
+        'Photos (1).zip',
+        'Photos (2).zip',
+        'Photos (3).zip',
+        'Photos (4).zip',
+        'Photos (5).zip',
+        'Photos (6).zip',
     ]
 
-    day_dirs = os.listdir(week_dir)
-    for fname in sorted(day_dirs, key=lambda date: datetime.datetime.strptime(date, '%m_%d_%y')):
-        print(os.path.join(week_dir, fname))
+    day_dirs = [x for x in os.listdir(week_dir) if os.path.isdir(os.path.join(week_dir, x))]
+    for fname, i in zip(sorted(day_dirs, key=lambda date: datetime.datetime.strptime(date, '%m_%d_%y')),
+                        range(len(day_dirs))):
+        folder_path = os.path.join(week_dir, fname)
+        zip_path = os.path.join(download_dir, photos_fnames[i])
+
+        if os.path.exists(zip_path):
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                print("Extracting {} to {}".format(zip_path, folder_path))
+                zip_ref.extractall(folder_path)
+            print("Removing {}".format(zip_path))
+            os.remove(zip_path)
 
 
 def main(args):
     base_dir = 'D:/drawing/work'
-
     unit_dir = os.path.join(base_dir, args.unit)
 
     if (args.day and args.month):
@@ -86,7 +96,6 @@ if __name__ == '__main__':
     parser.add_argument('--month', type=int, help='The month number (January = 1)')
     parser.add_argument('--day', type=int, help='The start day of the month')
     parser.add_argument('--week', type=int, help='The week number to unzip photos for')
-
     args = parser.parse_args()
 
     main(args)
