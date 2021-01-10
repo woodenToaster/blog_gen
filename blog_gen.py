@@ -56,6 +56,9 @@ def get_next_n_days(n, month, day, year):
 
     return result
 
+def log_create_dir(dir_name):
+    print("Creating directory '{}'".format(dir_name))
+
 def init_unit(unit_dir, month, day):
     if args.day > days_in_month[args.month]:
         sys.exit("There are only {} days in month {}".format(days_in_month[args.month], args.month))
@@ -63,16 +66,28 @@ def init_unit(unit_dir, month, day):
     assert(args.day)
     assert(args.month)
 
+    log_create_dir(unit_dir)
     os.mkdir(unit_dir)
     year = int(time.strftime("%y"))
     weeks = ["Week{}".format(x + 1) for x in range(4)]
     for week in weeks:
         week_dir = os.path.join(unit_dir, week)
+        log_create_dir(week_dir)
         os.mkdir(week_dir)
-        days = get_next_n_days(7, month, day, year)
+
+        num_days = 7
+        days = get_next_n_days(num_days, month, day, year)
+
+        starting_date = datetime.datetime.strptime("{}_{}_{}".format(month, day, year), "%m_%d_%y")
+        end_date = (starting_date + datetime.timedelta(days=num_days)).date()
+
+        day = end_date.day
+        month = end_date.month
+        year = end_date.year - 2000
 
         for date in days:
             date_path = os.path.join(week_dir, date)
+            log_create_dir(date_path)
             os.mkdir(date_path)
 
 def transfer_photos(unit_dir, week):
